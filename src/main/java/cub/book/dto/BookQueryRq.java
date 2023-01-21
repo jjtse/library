@@ -27,7 +27,7 @@ public class BookQueryRq {
 	@JsonProperty("BookName")
 	private String bookName;
 	
-	@Pattern(regexp="1|2|3",message="QueryType 只有 1、2、3 這三種")
+	@Pattern(regexp="1|2|3",message="{queryType.constraint}")
 	@Schema(description="Book-查詢種類")
 	@JsonProperty("QueryType")
 	private String queryType;
