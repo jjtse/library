@@ -44,6 +44,8 @@ public class BookServiceImpl implements BookService {
 	@Override
 	@Transactional
 	public CubResponse<BookAddRq> insertBookData(@Valid BookAddRq bookAddRq) {
+		String key = bookAddRq.getBookIsbn();
+
 		CubResponse<BookAddRq> cubRs = new CubResponse<BookAddRq>();
 		// insert book_info
 		LocalDate currentDate = LocalDate.now();
@@ -56,6 +58,7 @@ public class BookServiceImpl implements BookService {
 		bookEntity.setBookStatus("1");
 		bookEntity.setBookPubDate(bookAddRq.getBookPubDate());
 		bookEntity.setBookCreateDate(currentDate);
+		redisService.setBookAddRq(key, bookEntity);
 		bookRepository.persist(bookEntity);
 		System.out.println("新增成功 ");
 		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
@@ -75,7 +78,7 @@ public class BookServiceImpl implements BookService {
 			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 			return cubRs;
 		}
-		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001,"，資料不存在");
+		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
 		return cubRs;
 
 	}
@@ -127,7 +130,7 @@ public class BookServiceImpl implements BookService {
 			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 			return cubRs;
 		}
-		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001,"，資料不存在");
+		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
 		return cubRs;
 	}
 
