@@ -27,6 +27,13 @@ public class CubResponse<T> {
 		this.mwHeader.setReturnDesc(returnCodeEnum.getReturnDesc());
 	}
 
+	public void setReturnCodeAndDesc(ReturnCodeEnum returnCodeEnum, String errorMessage) {
+		mwHeader = new MwHeader();
+		this.mwHeader.setReturnCode(returnCodeEnum.getReturnCode());
+		this.mwHeader.setReturnDesc(returnCodeEnum.getReturnDesc()+errorMessage);
+		
+	}
+
 }
 
 // 因為 Response 不一定要有 MwHeader，所以不用 @Valid

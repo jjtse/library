@@ -43,18 +43,18 @@ public class BookServiceImpl implements BookService {
 
 	@Override
 	@Transactional
-	public CubResponse<BookAddRq> insertBookData(BookDto bookdto) {
+	public CubResponse<BookAddRq> insertBookData(@Valid BookAddRq bookAddRq) {
 		CubResponse<BookAddRq> cubRs = new CubResponse<BookAddRq>();
 		// insert book_info
 		LocalDate currentDate = LocalDate.now();
 		BookEntity bookEntity = new BookEntity();
-		bookEntity.setBookIsbn(bookdto.getBookIsbn());
-		bookEntity.setBookLanguage(bookdto.getBookLanguage());
-		bookEntity.setBookName(bookdto.getBookName());
-		bookEntity.setBookAuthor(bookdto.getBookAuthor());
-		bookEntity.setBookPublisher(bookdto.getBookPublisher());
+		bookEntity.setBookIsbn(bookAddRq.getBookIsbn());
+		bookEntity.setBookLanguage(bookAddRq.getBookLanguage());
+		bookEntity.setBookName(bookAddRq.getBookName());
+		bookEntity.setBookAuthor(bookAddRq.getBookAuthor());
+		bookEntity.setBookPublisher(bookAddRq.getBookPublisher());
 		bookEntity.setBookStatus("1");
-		bookEntity.setBookPubDate(bookdto.getBookPubDate());
+		bookEntity.setBookPubDate(bookAddRq.getBookPubDate());
 		bookEntity.setBookCreateDate(currentDate);
 		bookRepository.persist(bookEntity);
 		System.out.println("新增成功 ");
@@ -63,17 +63,17 @@ public class BookServiceImpl implements BookService {
 	}
 
 	@Override
-	public CubResponse<BookDeleteRq> deleteBookData(BookDeleteRq bookDeleteRq) {
+	public CubResponse<BookDeleteRq> deleteBookData(@Valid BookDeleteRq bookDeleteRq) {
 		CubResponse<BookDeleteRq> cubRs = new CubResponse<BookDeleteRq>();
 		// delete book_info by bookIsbn
-		bookRepository.deleteByIsbn(bookDeleteRq.getBookIsbn());
 		PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookDeleteRq.getBookIsbn());
 		Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
-		if (!optBookEntity.isPresent()) {
+		if (optBookEntity.isPresent()) {
+			bookRepository.deleteByIsbn(bookDeleteRq.getBookIsbn());
 			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 			return cubRs;
 		}
-		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001);
+		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001,"，資料不存在");
 		return cubRs;
 
 	}
@@ -125,7 +125,7 @@ public class BookServiceImpl implements BookService {
 			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 			return cubRs;
 		}
-		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001);
+		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001,"，資料不存在");
 		return cubRs;
 	}
 
