@@ -65,11 +65,13 @@ public class BookServiceImpl implements BookService {
 	@Override
 	public CubResponse<BookDeleteRq> deleteBookData(@Valid BookDeleteRq bookDeleteRq) {
 		CubResponse<BookDeleteRq> cubRs = new CubResponse<BookDeleteRq>();
+		String key = bookDeleteRq.getBookIsbn();
 		// delete book_info by bookIsbn
 		PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookDeleteRq.getBookIsbn());
 		Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
 		if (optBookEntity.isPresent()) {
 			bookRepository.deleteByIsbn(bookDeleteRq.getBookIsbn());
+			redisService.deleteBookDeleteRq(key);
 			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 			return cubRs;
 		}
