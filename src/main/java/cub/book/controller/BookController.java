@@ -15,7 +15,6 @@ import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
 
 import cub.book.dto.BookAddRq;
 import cub.book.dto.BookDeleteRq;
-import cub.book.dto.BookDto;
 import cub.book.dto.BookQueryRq;
 import cub.book.dto.BookQueryRs;
 import cub.book.dto.BookUpdateRq;
@@ -36,8 +35,8 @@ public class BookController {
 	@Operation(summary = "新增書籍")
 	@POST
 	@Path("/book/add")
-	public RestResponse<CubResponse<BookAddRq>> bookAdd(BookDto bookdto) {
-		CubResponse<BookAddRq> cubRs = bookService.insertBookData(bookdto);
+	public RestResponse<CubResponse<BookAddRq>> bookAdd(@Valid BookAddRq bookAddRq) {
+		CubResponse<BookAddRq> cubRs = bookService.insertBookData(bookAddRq);
 		LocalDateTime currentTime = LocalDateTime.now();
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
 	}
@@ -45,7 +44,7 @@ public class BookController {
 	@Operation(summary = "刪除書籍")
 	@POST
 	@Path("/book/delete")
-	public RestResponse<CubResponse<BookDeleteRq>> bookDelete(BookDeleteRq bookDeleteRq) {
+	public RestResponse<CubResponse<BookDeleteRq>> bookDelete(@Valid BookDeleteRq bookDeleteRq) {
 		CubResponse<BookDeleteRq> cubRs = bookService.deleteBookData(bookDeleteRq);
 		LocalDateTime currentTime = LocalDateTime.now();
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
