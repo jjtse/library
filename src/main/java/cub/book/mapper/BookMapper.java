@@ -1,14 +1,17 @@
 package cub.book.mapper;
 
 import cub.book.dto.BookDto;
+import cub.book.dto.BookQueryRq;
 import cub.book.dto.BookUpdateRq;
 import cub.book.entity.BookEntity;
 
 public interface BookMapper {
-	
-	BookDto BookEntityToBookDto(BookEntity bookEntity);
-	
-	BookEntity BookUpdateRqToBookEntity(BookUpdateRq bookUpdateRq,BookEntity bookEntity);
+
+	BookDto BookEntityToBookDto(BookEntity bookEntity, BookQueryRq bookQueryRq);
+
+	BookEntity BookUpdateRqToBookEntity(BookUpdateRq bookUpdateRq, BookEntity bookEntity);
+
+	BookDto AllBookEntityToBookDto(BookEntity bookEntity);
 
 }
 
