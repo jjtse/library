@@ -27,7 +27,6 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 @ApplicationScoped
 public class BookServiceImpl implements BookService {
 
-	// 1. 注入 redis 服務
 	@Inject
 	RedisService redisService;
 
@@ -45,33 +44,36 @@ public class BookServiceImpl implements BookService {
 	@Transactional
 	public CubResponse<BookAddRq> insertBookData(@Valid BookAddRq bookAddRq) {
 		String key = bookAddRq.getBookIsbn();
-
 		CubResponse<BookAddRq> cubRs = new CubResponse<BookAddRq>();
-		// insert book_info
-		LocalDate currentDate = LocalDate.now();
-		BookEntity bookEntity = new BookEntity();
-		bookEntity.setBookIsbn(bookAddRq.getBookIsbn());
-		bookEntity.setBookLanguage(bookAddRq.getBookLanguage());
-		bookEntity.setBookName(bookAddRq.getBookName());
-		bookEntity.setBookAuthor(bookAddRq.getBookAuthor());
-		bookEntity.setBookPublisher(bookAddRq.getBookPublisher());
-		bookEntity.setBookStatus("1");
-		bookEntity.setBookPubDate(bookAddRq.getBookPubDate());
-		bookEntity.setBookCreateDate(currentDate);
-		redisService.setBookAddRq(key, bookEntity);
-		bookRepository.persist(bookEntity);
-		System.out.println("新增成功 ");
-		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
-		return cubRs;
+
+		if (redisService.getBookRq(key) == null) {
+			LocalDate currentDate = LocalDate.now();
+			BookEntity bookEntity = new BookEntity();
+			bookEntity.setBookIsbn(bookAddRq.getBookIsbn());
+			bookEntity.setBookLanguage(bookAddRq.getBookLanguage());
+			bookEntity.setBookName(bookAddRq.getBookName());
+			bookEntity.setBookAuthor(bookAddRq.getBookAuthor());
+			bookEntity.setBookPublisher(bookAddRq.getBookPublisher());
+			bookEntity.setBookStatus("1");
+			bookEntity.setBookPubDate(bookAddRq.getBookPubDate());
+			bookEntity.setBookCreateDate(currentDate);
+			redisService.setBookAddRq(key, bookEntity);
+			bookRepository.persist(bookEntity);
+			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
+			return cubRs;
+		} else {
+			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料已存在");
+			return cubRs;
+		}
 	}
 
 	@Override
 	public CubResponse<BookDeleteRq> deleteBookData(@Valid BookDeleteRq bookDeleteRq) {
 		CubResponse<BookDeleteRq> cubRs = new CubResponse<BookDeleteRq>();
 		String key = bookDeleteRq.getBookIsbn();
-		// delete book_info by bookIsbn
 		PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookDeleteRq.getBookIsbn());
 		Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
+
 		if (optBookEntity.isPresent()) {
 			bookRepository.deleteByIsbn(bookDeleteRq.getBookIsbn());
 			redisService.deleteBookDeleteRq(key);
@@ -85,30 +87,27 @@ public class BookServiceImpl implements BookService {
 
 	@Override
 	public CubResponse<BookQueryRs> bookQuery(@Valid BookQueryRq bookQueryRq) {
-
-		// 2. 設定 redis key、取出 redis 值
-		String key = "BookQuery" + bookQueryRq.getBookIsbn();
-		redisService.setBookQueryRq(key, bookQueryRq);
-		System.out.println(redisService.getBookQueryRq(key).getBookIsbn());
-		System.out.println(redisService.getBookQueryRq(key).getBookName());
-
 		List<BookDto> lsBookDto = bookRepository.bookQuery(bookQueryRq);
 		BookQueryRs bookQueryRs = new BookQueryRs();
-		bookQueryRs.setBookCount(lsBookDto.size());
-		bookQueryRs.setBookList(lsBookDto);
-		CubResponse<BookQueryRs> cubRs = new CubResponse<BookQueryRs>();
-		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
-		cubRs.setTranRs(bookQueryRs);
 
-		return cubRs;
+		if (lsBookDto.size() != 0) {
+			bookQueryRs.setBookCount(lsBookDto.size());
+			bookQueryRs.setBookList(lsBookDto);
+			CubResponse<BookQueryRs> cubRs = new CubResponse<BookQueryRs>();
+			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
+			cubRs.setTranRs(bookQueryRs);
+			return cubRs;
+		} else {
+			CubResponse<BookQueryRs> cubRs = new CubResponse<BookQueryRs>();
+			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
+			return cubRs;
+		}
 	}
 
 	@Override
 	@Transactional
 	public CubResponse<BookUpdateRq> bookUpdate(@Valid BookUpdateRq bookUpdateRq) {
-
-		// 2. 設定 redis key、取出 redis 值
-		String key = "BookUpdate" + bookUpdateRq.getBookIsbn();
+		String key = bookUpdateRq.getBookIsbn();
 		redisService.set(key, bookUpdateRq);
 		System.out.println(redisService.get(key).getBookIsbn());
 		System.out.println(redisService.get(key).getBookName());

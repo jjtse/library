@@ -32,7 +32,7 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
 			.collect(Collectors.toList());
 
 		CubResponse<ErrorResponse> cubRs = new CubResponse<ErrorResponse>();
-		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001);
+		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.V001);
 		cubRs.setTranRs(new ErrorResponse(errorId,errorMessage));
 		
 		
