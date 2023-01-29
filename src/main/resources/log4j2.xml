@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="DEBUG">
+	<Appenders>
+		<Kafka name="Kafka" topic="library">
+<!-- 			<Slf4jLayout /> -->
+			<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} 
+				- %msg%n"/> -->
+			<JsonLayout complete="false" locationInfo="true"
+				properties="true" propertiesAsList="true" eventEol="true" />
+			<Property name="bootstrap.servers">192.168.56.1:9092</Property>
+<!-- 			<Property name="key.serializer">org.apache.kafka.common.serialization.StringSerializer -->
+<!-- 			</Property> -->
+<!-- 			<Property name="value.serializer">org.apache.kafka.common.serialization.StringSerializer -->
+<!-- 			</Property> -->
+		<!-- <Property name="acks">0</Property> -->
+	</Kafka>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout
+				pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+		</Console>
+		<RollingFile name="RollingFile" fileName="logs/app.log"
+			filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+			<PatternLayout
+				pattern="%d{yyyy.MM.dd 'at' HH:mm:ss z} %-5level %class{36} %L %M - %msg%xEx%n" />
+			<SizeBasedTriggeringPolicy size="5 MB" />
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Root level="INFO">
+			<appender-ref ref="Kafka" />
+			<appender-ref ref="Console" />
+			<appender-ref ref="RollingFile" />
+		</Root>
+		<Logger name="org.apache.kafka" level="INFO" />
+	</Loggers>
+</Configuration>
+
+
+<!-- <?xml version="1.0" encoding="UTF-8"?> -->
+<!-- <Configuration status="WARN"> -->
+<!-- <Appenders> -->
+<!-- <Console name="Console" target="SYSTEM_OUT"> -->
+<!-- <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - 
+	%msg%n" /> -->
+<!-- </Console> -->
+<!-- </Appenders> -->
+<!-- <Loggers> -->
+<!-- <Root level="info"> -->
+<!-- <AppenderRef ref="Console" /> -->
+<!-- </Root> -->
+<!-- <Logger name="org.slf4j" level="error" additivity="false"> -->
+<!-- <AppenderRef ref="Console" /> -->
+<!-- </Logger> -->
+<!-- </Loggers> -->
+<!-- </Configuration> -->

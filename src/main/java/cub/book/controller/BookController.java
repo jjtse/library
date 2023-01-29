@@ -20,13 +20,21 @@ import cub.book.dto.BookQueryRq;
 import cub.book.dto.BookQueryRs;
 import cub.book.dto.BookUpdateRq;
 import cub.book.dto.base.CubResponse;
+import cub.book.kafka.BookProducer;
 import cub.book.service.BookService;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequestScoped
 @Path("")
 public class BookController {
 
 	private BookService bookService;
+	
+//	private static final Logger logger = LogManager.getLogger(BookController.class);
+	
+	@Inject
+	BookProducer booskProducer;
 
 	@Inject
 	public BookController(BookService bookService) {
@@ -55,6 +63,10 @@ public class BookController {
 	@POST
 	@Path("/book/query")
 	public RestResponse<CubResponse<BookQueryRs>> bookQuery(@Valid BookQueryRq bookQueryRq) {
+		booskProducer.sendMessageToKafka(bookQueryRq);
+//		logger.info("test");
+//		log.info("BookQueryRq: {}", bookQueryRq);
+//		log.info("query book");
 		CubResponse<BookQueryRs> cubRs = bookService.bookQuery(bookQueryRq);
 		LocalDateTime currentTime = LocalDateTime.now();
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
