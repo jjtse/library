@@ -16,7 +16,6 @@ import cub.book.dto.BookQueryRq;
 import cub.book.entity.BookEntity;
 import cub.book.mapper.BookMapper;
 import cub.book.service.RedisService;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
@@ -65,30 +64,41 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 			}
 		case "2":
 			if ("1".equals(bookQueryRq.getBookStatus())) {
-				PanacheQuery<BookEntity> paBookEntity = find("bookStatus", bookQueryRq.getBookStatus());
-				List<BookEntity> lsBookEntity = paBookEntity.list();
-				for (BookEntity bookEntity : lsBookEntity) {
-					lsBookDto.add(bookMapper.BookEntityToBookDto(bookEntity, bookQueryRq));
+				String[] keys = redisService.keys().toString().replace("[", "").replace("]", "").split(", ");
+				Map<String, BookEntity> RedisBookValue = redisService.getAllBookRq(keys);
+				for (BookEntity bookEntity : RedisBookValue.values()) {
+					if ("1".equals(bookEntity.getBookStatus())) {
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+					}
 				}
 			} else if ("2".equals(bookQueryRq.getBookStatus())) {
-				PanacheQuery<BookEntity> paBookEntity = find("bookStatus", bookQueryRq.getBookStatus());
-				List<BookEntity> lsBookEntity = paBookEntity.list();
-				for (BookEntity bookEntity : lsBookEntity) {
-					lsBookDto.add(bookMapper.BookEntityToBookDto(bookEntity, bookQueryRq));
+				String[] keys = redisService.keys().toString().replace("[", "").replace("]", "").split(", ");
+				Map<String, BookEntity> RedisBookValue = redisService.getAllBookRq(keys);
+				for (BookEntity bookEntity : RedisBookValue.values()) {
+					if ("2".equals(bookEntity.getBookStatus())) {
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+					}
 				}
 			} else if ("3".equals(bookQueryRq.getBookStatus())) {
-				PanacheQuery<BookEntity> paBookEntity = find("bookStatus", bookQueryRq.getBookStatus());
-				List<BookEntity> lsBookEntity = paBookEntity.list();
-				for (BookEntity bookEntity : lsBookEntity) {
-					lsBookDto.add(bookMapper.BookEntityToBookDto(bookEntity, bookQueryRq));
+				String[] keys = redisService.keys().toString().replace("[", "").replace("]", "").split(", ");
+				System.out.println("case2:" + keys);
+				Map<String, BookEntity> RedisBookValue = redisService.getAllBookRq(keys);
+				for (BookEntity bookEntity : RedisBookValue.values()) {
+					if ("3".equals(bookEntity.getBookStatus())) {
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+					}
 				}
 			}
 		case "3":
-			List<BookEntity> lsBookEntity = entityManager
-					.createQuery("select e from BookEntity e where e.bookName like ?1", BookEntity.class)
-					.setParameter(1, "%" + bookQueryRq.getBookName() + "%").getResultList();
-			for (BookEntity bookEntity : lsBookEntity) {
-				lsBookDto.add(bookMapper.BookEntityToBookDto(bookEntity, bookQueryRq));
+			String[] keys = redisService.keys().toString().replace("[", "").replace("]", "").split(", ");
+			Map<String, BookEntity> RedisBookValue = redisService.getAllBookRq(keys);
+
+			for (BookEntity bookEntity : RedisBookValue.values()) {
+				String EntityBookName = bookEntity.getBookName().toUpperCase();
+				String RqBookName = bookQueryRq.getBookName().toUpperCase();
+				if (EntityBookName.contains(RqBookName)) {
+					lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+				}
 			}
 		}
 		return lsBookDto;
