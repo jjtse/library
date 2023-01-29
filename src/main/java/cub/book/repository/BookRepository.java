@@ -62,6 +62,7 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 				}
 
 			}
+			break;
 		case "2":
 			if ("1".equals(bookQueryRq.getBookStatus())) {
 				String[] keys = redisService.keys().toString().replace("[", "").replace("]", "").split(", ");
@@ -89,6 +90,7 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 					}
 				}
 			}
+			break;
 		case "3":
 			String[] keys = redisService.keys().toString().replace("[", "").replace("]", "").split(", ");
 			Map<String, BookEntity> RedisBookValue = redisService.getAllBookRq(keys);
@@ -100,6 +102,7 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 					lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
 				}
 			}
+			break;
 		}
 		return lsBookDto;
 	}
