@@ -8,7 +8,6 @@ import javax.enterprise.context.ApplicationScoped;
 
 import cub.book.dto.BookDeleteRq;
 import cub.book.dto.BookQueryRq;
-import cub.book.dto.BookUpdateRq;
 import cub.book.entity.BookEntity;
 //import io.quarkus.redis.datasource.ReactiveRedisDataSource;
 //import io.vertx.mutiny.redis.client.RedisAPI;
@@ -23,7 +22,7 @@ public class RedisService {
 	// @Inject RedisDataSource redisDataSource;
 	// @Inject RedisAPI redisAPI;
 
-	private final ValueCommands<String, BookUpdateRq> commandsBookUpdateRq;
+	private final ValueCommands<String, BookEntity> commandsBookUpdateRq;
 	private final ValueCommands<String, BookQueryRq> commandsBookQueryRq;
 	private final ValueCommands<String, BookDeleteRq> commandsBookDeleteRq;
 	private final ValueCommands<String, BookEntity> commandsBookAddRq;
@@ -31,7 +30,7 @@ public class RedisService {
 	private KeyCommands<String> keys;
 
 	public RedisService(RedisDataSource ds) {
-		commandsBookUpdateRq = ds.value(BookUpdateRq.class);
+		commandsBookUpdateRq = ds.value(BookEntity.class);
 		commandsBookQueryRq = ds.value(BookQueryRq.class);
 		commandsBookDeleteRq = ds.value(BookDeleteRq.class);
 		commandsBookAddRq = ds.value(BookEntity.class);
@@ -39,11 +38,11 @@ public class RedisService {
 		keys = ds.key();
 	}
 
-	public BookUpdateRq get(String key) {
+	public BookEntity get(String key) {
 		return commandsBookUpdateRq.get(key);
 	}
 
-	public void set(String key, BookUpdateRq valueType) {
+	public void set(String key, BookEntity valueType) {
 		commandsBookUpdateRq.set(key, valueType);
 	}
 
@@ -73,6 +72,10 @@ public class RedisService {
 
 	public Map<String, BookEntity> getAllBookRq(String[] key) {
 		return commandsBookAllRq.mget(key);
+	}
+
+	public Map<String, BookQueryRq> getQueryBookRq(String[] key) {
+		return commandsBookQueryRq.mget(key);
 	}
 
 }

@@ -108,24 +108,25 @@ public class BookServiceImpl implements BookService {
 	@Transactional
 	public CubResponse<BookUpdateRq> bookUpdate(@Valid BookUpdateRq bookUpdateRq) {
 		String key = bookUpdateRq.getBookIsbn();
-		redisService.set(key, bookUpdateRq);
-		System.out.println(redisService.get(key).getBookIsbn());
-		System.out.println(redisService.get(key).getBookName());
-		System.out.println(redisService.get(key).getBookLanguage());
-		System.out.println(redisService.get(key).getBookAuthor());
-		System.out.println(redisService.get(key).getBookPublisher());
-		System.out.println(redisService.get(key).getBookPubDate());
-		System.out.println(redisService.get(key).getBookCreateDate());
-		System.out.println(redisService.get(key).getBookStatus());
+		BookEntity bookEntity = new BookEntity();
+		bookEntity.setBookIsbn(bookUpdateRq.getBookIsbn());
+		bookEntity.setBookLanguage(bookUpdateRq.getBookLanguage());
+		bookEntity.setBookName(bookUpdateRq.getBookName());
+		bookEntity.setBookAuthor(bookUpdateRq.getBookAuthor());
+		bookEntity.setBookPublisher(bookUpdateRq.getBookPublisher());
+		bookEntity.setBookPubDate(bookUpdateRq.getBookPubDate());
+		bookEntity.setBookCreateDate(bookUpdateRq.getBookCreateDate());
+		bookEntity.setBookStatus(bookUpdateRq.getBookStatus());
+		redisService.set(key, bookEntity);
 
 		CubResponse<BookUpdateRq> cubRs = new CubResponse<BookUpdateRq>();
 
 		PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookUpdateRq.getBookIsbn());
 		Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
 		if (optBookEntity.isPresent()) {
-			BookEntity bookEntity = optBookEntity.get();
-			bookMapper.BookUpdateRqToBookEntity(bookUpdateRq, bookEntity);
-			bookRepository.persist(bookEntity);
+			BookEntity bookEntities = optBookEntity.get();
+			bookMapper.BookUpdateRqToBookEntity(bookUpdateRq, bookEntities);
+			bookRepository.persist(bookEntities);
 			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 			return cubRs;
 		}
