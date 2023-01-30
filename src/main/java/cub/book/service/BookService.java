@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import cub.book.dto.BookAddRq;
 import cub.book.dto.BookDeleteRq;
+import cub.book.dto.BookInOutRq;
 import cub.book.dto.BookQueryRq;
 import cub.book.dto.BookQueryRs;
 import cub.book.dto.BookUpdateRq;
@@ -19,4 +20,7 @@ public interface BookService {
 
 	CubResponse<BookDeleteRq> deleteBookData(@Valid BookDeleteRq bookDeleteRq);
 
+	CubResponse<BookInOutRq> bookBorrow(@Valid BookInOutRq bookInOutRq, String type);
+
+	CubResponse<BookInOutRq> bookReturn(@Valid BookInOutRq bookInOutRq, String type);
 }

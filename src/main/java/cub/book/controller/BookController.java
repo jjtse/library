@@ -15,6 +15,7 @@ import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
 
 import cub.book.dto.BookAddRq;
 import cub.book.dto.BookDeleteRq;
+import cub.book.dto.BookInOutRq;
 import cub.book.dto.BookQueryRq;
 import cub.book.dto.BookQueryRs;
 import cub.book.dto.BookUpdateRq;
@@ -65,6 +66,26 @@ public class BookController {
 	@Path("/book/modify")
 	public RestResponse<CubResponse<BookUpdateRq>> bookUpdate(@Valid BookUpdateRq bookUpdateRq) {
 		CubResponse<BookUpdateRq> cubRs = bookService.bookUpdate(bookUpdateRq);
+		LocalDateTime currentTime = LocalDateTime.now();
+		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
+	}
+
+	@Operation(summary = "書籍借閱")
+	@POST
+	@Path("/book/borrow")
+	public RestResponse<CubResponse<BookInOutRq>> bookBorrow(@Valid BookInOutRq bookInOutRq) {
+		String checkType = "1";
+		CubResponse<BookInOutRq> cubRs = bookService.bookBorrow(bookInOutRq, checkType);
+		LocalDateTime currentTime = LocalDateTime.now();
+		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
+	}
+
+	@Operation(summary = "書籍歸還")
+	@POST
+	@Path("/book/return")
+	public RestResponse<CubResponse<BookInOutRq>> bookReturn(@Valid BookInOutRq bookInOutRq) {
+		String checkType = "2";
+		CubResponse<BookInOutRq> cubRs = bookService.bookReturn(bookInOutRq, checkType);
 		LocalDateTime currentTime = LocalDateTime.now();
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
 	}
