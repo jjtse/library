@@ -25,7 +25,7 @@ public class BookAddRq {
 
 	@Schema(description = "Book-語言")
 	@JsonProperty("BookLanguage")
-	@Pattern(regexp = "1|2|3", message = "BookLanguage 只有 1、2、3 這三種")
+	@Pattern(regexp = "1|2|3", message = "{queryType.constraint}")
 	private String bookLanguage;
 
 	@Schema(description = "Book-書名")
