@@ -1,5 +1,6 @@
 package cub.book.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -7,7 +8,6 @@ import javax.enterprise.context.ApplicationScoped;
 //import javax.inject.Inject;
 
 import cub.book.dto.BookDeleteRq;
-import cub.book.dto.BookQueryRq;
 import cub.book.entity.BookEntity;
 //import io.quarkus.redis.datasource.ReactiveRedisDataSource;
 //import io.vertx.mutiny.redis.client.RedisAPI;
@@ -23,7 +23,6 @@ public class RedisService {
 	// @Inject RedisAPI redisAPI;
 
 	private final ValueCommands<String, BookEntity> commandsBookUpdateRq;
-	private final ValueCommands<String, BookQueryRq> commandsBookQueryRq;
 	private final ValueCommands<String, BookDeleteRq> commandsBookDeleteRq;
 	private final ValueCommands<String, BookEntity> commandsBookAddRq;
 	private final ValueCommands<String, BookEntity> commandsBookAllRq;
@@ -31,7 +30,6 @@ public class RedisService {
 
 	public RedisService(RedisDataSource ds) {
 		commandsBookUpdateRq = ds.value(BookEntity.class);
-		commandsBookQueryRq = ds.value(BookQueryRq.class);
 		commandsBookDeleteRq = ds.value(BookDeleteRq.class);
 		commandsBookAddRq = ds.value(BookEntity.class);
 		commandsBookAllRq = ds.value(BookEntity.class);
@@ -44,14 +42,6 @@ public class RedisService {
 
 	public void set(String key, BookEntity valueType) {
 		commandsBookUpdateRq.set(key, valueType);
-	}
-
-	public BookQueryRq getBookQueryRq(String key) {
-		return commandsBookQueryRq.get(key);
-	}
-
-	public void setBookQueryRq(String key, BookQueryRq valueType) {
-		commandsBookQueryRq.set(key, valueType);
 	}
 
 	public void deleteBookDeleteRq(String key) {
@@ -71,11 +61,14 @@ public class RedisService {
 	}
 
 	public Map<String, BookEntity> getAllBookRq(String[] key) {
-		return commandsBookAllRq.mget(key);
+		if (key[0].isEmpty()) {
+			BookEntity bookEntity = new BookEntity();
+			bookEntity.setBookIsbn(null);
+			Map<String, BookEntity> checkMap = new HashMap<String, BookEntity>();
+			Map.entry("check", bookEntity);
+			return checkMap;
+		} else {
+			return commandsBookAllRq.mget(key);
+		}
 	}
-
-	public Map<String, BookQueryRq> getQueryBookRq(String[] key) {
-		return commandsBookQueryRq.mget(key);
-	}
-
 }

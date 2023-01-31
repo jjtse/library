@@ -20,7 +20,7 @@ public class BookAddRq {
 
 	@Schema(description = "Book-ISBN號碼")
 	@JsonProperty("BookIsbn")
-	@NotBlank(message = "BookIsbn IS BLANK")
+	@NotBlank(message = "{bookIsbn.constraint}")
 	private String bookIsbn;
 
 	@Schema(description = "Book-語言")
@@ -30,7 +30,7 @@ public class BookAddRq {
 
 	@Schema(description = "Book-書名")
 	@JsonProperty("BookName")
-	@NotBlank(message = "BookName IS BLANK")
+	@NotBlank(message = "{bookName.constraint}")
 	private String bookName;
 
 	@Schema(description = "Book-作者")

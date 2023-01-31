@@ -12,6 +12,7 @@ import javax.validation.Valid;
 import cub.book.dto.BookAddRq;
 import cub.book.dto.BookDeleteRq;
 import cub.book.dto.BookDto;
+import cub.book.dto.BookInOutRq;
 import cub.book.dto.BookQueryRq;
 import cub.book.dto.BookQueryRs;
 import cub.book.dto.BookUpdateRq;
@@ -90,7 +91,7 @@ public class BookServiceImpl implements BookService {
 		List<BookDto> lsBookDto = bookRepository.bookQuery(bookQueryRq);
 		BookQueryRs bookQueryRs = new BookQueryRs();
 
-		if (lsBookDto.size() != 0) {
+		if (lsBookDto.size() != 0 && lsBookDto.get(0).getBookIsbn() != null) {
 			bookQueryRs.setBookCount(lsBookDto.size());
 			bookQueryRs.setBookList(lsBookDto);
 			CubResponse<BookQueryRs> cubRs = new CubResponse<BookQueryRs>();
@@ -131,6 +132,84 @@ public class BookServiceImpl implements BookService {
 			return cubRs;
 		}
 		cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
+		return cubRs;
+	}
+
+	@Override
+	@Transactional
+	public CubResponse<BookInOutRq> bookBorrow(@Valid BookInOutRq bookInOutRq, String type) {
+		CubResponse<BookInOutRq> cubRs = new CubResponse<BookInOutRq>();
+		String key = bookInOutRq.getBookIsbn();
+		if (redisService.getBookRq(key) != null) {
+			BookEntity redisBookData = redisService.get(key);
+			if ("2".equals(redisBookData.getBookStatus())) {
+				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，該書已借出");
+			} else {
+				BookEntity bookEntity = new BookEntity();
+				bookEntity.setBookIsbn(redisBookData.getBookIsbn());
+				bookEntity.setBookLanguage(redisBookData.getBookLanguage());
+				bookEntity.setBookName(redisBookData.getBookName());
+				bookEntity.setBookAuthor(redisBookData.getBookAuthor());
+				bookEntity.setBookPublisher(redisBookData.getBookPublisher());
+				bookEntity.setBookPubDate(redisBookData.getBookPubDate());
+				bookEntity.setBookCreateDate(redisBookData.getBookCreateDate());
+				bookEntity.setBookBorrowerId(bookInOutRq.getBookBorrowerId());
+				bookEntity.setBookStatus("2");
+				bookEntity.setBorrowDate(LocalDate.now());
+				redisService.set(key, bookEntity);
+
+				PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookInOutRq.getBookIsbn());
+				Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
+				if (optBookEntity.isPresent()) {
+					BookEntity bookEntities = optBookEntity.get();
+					bookMapper.BookBorrowRqToBookEntity(bookInOutRq, bookEntities, type);
+					bookRepository.persist(bookEntities);
+					cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
+				}
+			}
+
+		} else {
+			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
+		}
+		return cubRs;
+	}
+
+	@Override
+	@Transactional
+	public CubResponse<BookInOutRq> bookReturn(@Valid BookInOutRq bookInOutRq, String type) {
+		CubResponse<BookInOutRq> cubRs = new CubResponse<BookInOutRq>();
+		String key = bookInOutRq.getBookIsbn();
+		if (redisService.getBookRq(key) != null) {
+			BookEntity redisBookData = redisService.get(key);
+			if ("1".equals(redisBookData.getBookStatus())) {
+				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，該書已歸還");
+			} else {
+				BookEntity bookEntity = new BookEntity();
+				bookEntity.setBookIsbn(redisBookData.getBookIsbn());
+				bookEntity.setBookLanguage(redisBookData.getBookLanguage());
+				bookEntity.setBookName(redisBookData.getBookName());
+				bookEntity.setBookAuthor(redisBookData.getBookAuthor());
+				bookEntity.setBookPublisher(redisBookData.getBookPublisher());
+				bookEntity.setBookPubDate(redisBookData.getBookPubDate());
+				bookEntity.setBookCreateDate(redisBookData.getBookCreateDate());
+				bookEntity.setBookBorrowerId("");
+				bookEntity.setBookStatus("1");
+				bookEntity.setBorrowDate(null);
+				redisService.set(key, bookEntity);
+
+				PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookInOutRq.getBookIsbn());
+				Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
+				if (optBookEntity.isPresent()) {
+					BookEntity bookEntities = optBookEntity.get();
+					bookMapper.BookBorrowRqToBookEntity(bookInOutRq, bookEntities, type);
+					bookRepository.persist(bookEntities);
+					cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
+				}
+			}
+
+		} else {
+			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
+		}
 		return cubRs;
 	}
 
