@@ -20,6 +20,8 @@ import cub.book.dto.BookQueryRq;
 import cub.book.dto.BookQueryRs;
 import cub.book.dto.BookUpdateRq;
 import cub.book.dto.base.CubResponse;
+import cub.book.entity.LogEntity;
+import cub.book.producer.BookProducer;
 import cub.book.service.BookService;
 
 @RequestScoped
@@ -27,18 +29,28 @@ import cub.book.service.BookService;
 public class BookController {
 
 	private BookService bookService;
+	
+	private BookProducer bookProducer;
 
 	@Inject
-	public BookController(BookService bookService) {
+	public BookController(BookService bookService,BookProducer bookProducer) {
 		this.bookService = bookService;
+		this.bookProducer = bookProducer;
 	}
 
 	@Operation(summary = "新增書籍")
 	@POST
 	@Path("/book/add")
 	public RestResponse<CubResponse<BookAddRq>> bookAdd(@Valid BookAddRq bookAddRq) {
-		CubResponse<BookAddRq> cubRs = bookService.insertBookData(bookAddRq);
 		LocalDateTime currentTime = LocalDateTime.now();
+		LogEntity logEntity = new LogEntity();
+		logEntity.setLogTime(currentTime);
+		logEntity.setLogType("INFO");
+		logEntity.setLogSource("bookAdd");
+		logEntity.setLogMessage("Sending Requests to API : bookAdd");
+		bookProducer.sendLogToKafka(logEntity);
+		
+		CubResponse<BookAddRq> cubRs = bookService.insertBookData(bookAddRq);
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
 	}
 
