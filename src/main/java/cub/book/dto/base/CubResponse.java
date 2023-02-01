@@ -7,7 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import cub.book.enums.ReturnCodeEnum;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
+@ToString
 @Getter
 @Setter
 public class CubResponse<T> {
