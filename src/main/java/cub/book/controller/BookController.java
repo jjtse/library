@@ -13,6 +13,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.RestResponse;
 import org.jboss.resteasy.reactive.RestResponse.ResponseBuilder;
 
+import cub.book.Utils.LogUtils;
 import cub.book.dto.BookAddRq;
 import cub.book.dto.BookDeleteRq;
 import cub.book.dto.BookInOutRq;
@@ -20,7 +21,6 @@ import cub.book.dto.BookQueryRq;
 import cub.book.dto.BookQueryRs;
 import cub.book.dto.BookUpdateRq;
 import cub.book.dto.base.CubResponse;
-import cub.book.entity.LogEntity;
 import cub.book.producer.BookProducer;
 import cub.book.service.BookService;
 
@@ -31,6 +31,9 @@ public class BookController {
 	private BookService bookService;
 	
 	private BookProducer bookProducer;
+	
+	@Inject
+	LogUtils logUtils;
 
 	@Inject
 	public BookController(BookService bookService,BookProducer bookProducer) {
@@ -42,13 +45,10 @@ public class BookController {
 	@POST
 	@Path("/book/add")
 	public RestResponse<CubResponse<BookAddRq>> bookAdd(@Valid BookAddRq bookAddRq) {
+		logUtils.message("INFO", "bookAdd", "Sending Requests to API:" + bookAddRq.toString());
 		LocalDateTime currentTime = LocalDateTime.now();
-		LogEntity logEntity = new LogEntity();
-		logEntity.setLogTime(currentTime);
-		logEntity.setLogType("INFO");
-		logEntity.setLogSource("bookAdd");
-		logEntity.setLogMessage("Sending Requests to API : bookAdd");
-		bookProducer.sendLogToKafka(logEntity);
+		
+		
 		
 		CubResponse<BookAddRq> cubRs = bookService.insertBookData(bookAddRq);
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
@@ -58,6 +58,7 @@ public class BookController {
 	@POST
 	@Path("/book/delete")
 	public RestResponse<CubResponse<BookDeleteRq>> bookDelete(@Valid BookDeleteRq bookDeleteRq) {
+		logUtils.message("INFO", "bookDelete", "Sending Requests to API:" + bookDeleteRq.toString());
 		CubResponse<BookDeleteRq> cubRs = bookService.deleteBookData(bookDeleteRq);
 		LocalDateTime currentTime = LocalDateTime.now();
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
@@ -67,6 +68,7 @@ public class BookController {
 	@POST
 	@Path("/book/query")
 	public RestResponse<CubResponse<BookQueryRs>> bookQuery(@Valid BookQueryRq bookQueryRq) {
+		logUtils.message("INFO", "bookQuery", "Sending Requests to API:" + bookQueryRq.toString());
 		CubResponse<BookQueryRs> cubRs = bookService.bookQuery(bookQueryRq);
 		LocalDateTime currentTime = LocalDateTime.now();
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
@@ -77,6 +79,7 @@ public class BookController {
 	@POST
 	@Path("/book/modify")
 	public RestResponse<CubResponse<BookUpdateRq>> bookUpdate(@Valid BookUpdateRq bookUpdateRq) {
+		logUtils.message("INFO", "bookUpdate", "Sending Requests to API:" + bookUpdateRq.toString());
 		CubResponse<BookUpdateRq> cubRs = bookService.bookUpdate(bookUpdateRq);
 		LocalDateTime currentTime = LocalDateTime.now();
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
@@ -86,6 +89,7 @@ public class BookController {
 	@POST
 	@Path("/book/borrow")
 	public RestResponse<CubResponse<BookInOutRq>> bookBorrow(@Valid BookInOutRq bookInOutRq) {
+		logUtils.message("INFO", "bookBorrow", "Sending Requests to API:" + bookInOutRq.toString());
 		String checkType = "1";
 		CubResponse<BookInOutRq> cubRs = bookService.bookBorrow(bookInOutRq, checkType);
 		LocalDateTime currentTime = LocalDateTime.now();
@@ -96,6 +100,7 @@ public class BookController {
 	@POST
 	@Path("/book/return")
 	public RestResponse<CubResponse<BookInOutRq>> bookReturn(@Valid BookInOutRq bookInOutRq) {
+		logUtils.message("INFO", "bookReturn", "Sending Requests to API:" + bookInOutRq.toString());
 		String checkType = "2";
 		CubResponse<BookInOutRq> cubRs = bookService.bookReturn(bookInOutRq, checkType);
 		LocalDateTime currentTime = LocalDateTime.now();
