@@ -133,21 +133,22 @@ public class BookServiceImpl implements BookService {
 	@Transactional
 	public CubResponse<BookUpdateRq> bookUpdate(@Valid BookUpdateRq bookUpdateRq) {
 		CubResponse<BookUpdateRq> cubRs = new CubResponse<BookUpdateRq>();
-		String key = bookUpdateRq.getBookIsbn();
-		BookEntity bookEntity = new BookEntity();
-		bookEntity.setBookIsbn(bookUpdateRq.getBookIsbn());
-		bookEntity.setBookLanguage(bookUpdateRq.getBookLanguage());
-		bookEntity.setBookName(bookUpdateRq.getBookName());
-		bookEntity.setBookAuthor(bookUpdateRq.getBookAuthor());
-		bookEntity.setBookPublisher(bookUpdateRq.getBookPublisher());
-		bookEntity.setBookPubDate(bookUpdateRq.getBookPubDate());
-		bookEntity.setBookCreateDate(bookUpdateRq.getBookCreateDate());
-		bookEntity.setBookStatus(bookUpdateRq.getBookStatus());
-		redisService.set(key, bookEntity);
-		logUtils.message("INFO", "bookUpadte", "redis was update successful");
-
 		PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookUpdateRq.getBookIsbn());
 		Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
+	
+//		String key = bookUpdateRq.getBookIsbn();
+//		BookEntity bookEntity = new BookEntity();
+//		bookEntity.setBookIsbn(bookUpdateRq.getBookIsbn());
+//		bookEntity.setBookLanguage(bookUpdateRq.getBookLanguage());
+//		bookEntity.setBookName(bookUpdateRq.getBookName());
+//		bookEntity.setBookAuthor(bookUpdateRq.getBookAuthor());
+//		bookEntity.setBookPublisher(bookUpdateRq.getBookPublisher());
+//		bookEntity.setBookPubDate(bookUpdateRq.getBookPubDate());
+//		bookEntity.setBookCreateDate(bookUpdateRq.getBookCreateDate());
+//		bookEntity.setBookStatus(bookUpdateRq.getBookStatus());
+//		redisService.set(key, bookEntity);
+//		logUtils.message("INFO", "bookUpadte", "redis was update successful");
+
 		try {
 			if (optBookEntity.isPresent()) {
 				BookEntity bookEntities = optBookEntity.get();
@@ -156,6 +157,8 @@ public class BookServiceImpl implements BookService {
 				logUtils.message("INFO", "bookUpadte", "mysql was update successful");
 				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 				logUtils.message("INFO", "bookUpadte", "response data: " + cubRs.toString());
+				redisService.deleteKeysAll();
+				logUtils.message("INFO", "bookUpadte", "redis was flushed successful");
 				return cubRs;
 			}
 			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
