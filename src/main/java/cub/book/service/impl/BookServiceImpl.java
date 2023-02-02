@@ -135,19 +135,6 @@ public class BookServiceImpl implements BookService {
 		CubResponse<BookUpdateRq> cubRs = new CubResponse<BookUpdateRq>();
 		PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookUpdateRq.getBookIsbn());
 		Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
-	
-//		String key = bookUpdateRq.getBookIsbn();
-//		BookEntity bookEntity = new BookEntity();
-//		bookEntity.setBookIsbn(bookUpdateRq.getBookIsbn());
-//		bookEntity.setBookLanguage(bookUpdateRq.getBookLanguage());
-//		bookEntity.setBookName(bookUpdateRq.getBookName());
-//		bookEntity.setBookAuthor(bookUpdateRq.getBookAuthor());
-//		bookEntity.setBookPublisher(bookUpdateRq.getBookPublisher());
-//		bookEntity.setBookPubDate(bookUpdateRq.getBookPubDate());
-//		bookEntity.setBookCreateDate(bookUpdateRq.getBookCreateDate());
-//		bookEntity.setBookStatus(bookUpdateRq.getBookStatus());
-//		redisService.set(key, bookEntity);
-//		logUtils.message("INFO", "bookUpadte", "redis was update successful");
 
 		try {
 			if (optBookEntity.isPresent()) {
