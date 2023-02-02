@@ -141,23 +141,22 @@ public class BookServiceImpl implements BookService {
 	@Transactional
 	public CubResponse<BookUpdateRq> bookUpdate(@Valid BookUpdateRq bookUpdateRq) {
 		CubResponse<BookUpdateRq> cubRs = new CubResponse<BookUpdateRq>();
-		String key = bookUpdateRq.getBookIsbn();
 		BookEntity bookEntity = new BookEntity();
-		bookEntity.setBookIsbn(bookUpdateRq.getBookIsbn());
-		bookEntity.setBookLanguage(bookUpdateRq.getBookLanguage());
-		bookEntity.setBookName(bookUpdateRq.getBookName());
-		bookEntity.setBookAuthor(bookUpdateRq.getBookAuthor());
-		bookEntity.setBookPublisher(bookUpdateRq.getBookPublisher());
-		bookEntity.setBookPubDate(bookUpdateRq.getBookPubDate());
-		bookEntity.setBookCreateDate(bookUpdateRq.getBookCreateDate());
-		bookEntity.setBookStatus(bookUpdateRq.getBookStatus());
-		redisService.set(key, bookEntity);
-		logUtils.message("INFO", "bookUpadte", "redis was update successful");
-
-		PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookUpdateRq.getBookIsbn());
-		Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
+		String key = bookUpdateRq.getBookIsbn();
 		try {
-			if (optBookEntity.isPresent()) {
+			if (redisService.getBookRq(key) != null) {
+				bookEntity.setBookIsbn(bookUpdateRq.getBookIsbn());
+				bookEntity.setBookLanguage(bookUpdateRq.getBookLanguage());
+				bookEntity.setBookName(bookUpdateRq.getBookName());
+				bookEntity.setBookAuthor(bookUpdateRq.getBookAuthor());
+				bookEntity.setBookPublisher(bookUpdateRq.getBookPublisher());
+				bookEntity.setBookPubDate(bookUpdateRq.getBookPubDate());
+				bookEntity.setBookCreateDate(bookUpdateRq.getBookCreateDate());
+				bookEntity.setBookStatus(bookUpdateRq.getBookStatus());
+				redisService.set(key, bookEntity);
+
+				PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookUpdateRq.getBookIsbn());
+				Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
 				BookEntity bookEntities = optBookEntity.get();
 				bookMapper.BookUpdateRqToBookEntity(bookUpdateRq, bookEntities);
 				bookRepository.persist(bookEntities);
@@ -165,10 +164,12 @@ public class BookServiceImpl implements BookService {
 				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 				logUtils.message("INFO", "bookUpadte", "response data: " + cubRs.toString());
 				return cubRs;
+
+			} else {
+				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
+				logUtils.message("INFO", "bookUpadte", "response data: " + cubRs.toString());
+				return cubRs;
 			}
-			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
-			logUtils.message("INFO", "bookUpadte", "response data: " + cubRs.toString());
-			return cubRs;
 
 		} catch (Exception e) {
 			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E999);
@@ -176,7 +177,7 @@ public class BookServiceImpl implements BookService {
 			return cubRs;
 		}
 	}
-
+	
 	@Override
 	@Transactional
 	public CubResponse<BookInOutRq> bookBorrow(@Valid BookInOutRq bookInOutRq, String type) {
