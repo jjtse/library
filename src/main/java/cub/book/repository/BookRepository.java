@@ -18,6 +18,7 @@ import cub.book.dto.BookQueryRq;
 import cub.book.entity.BookEntity;
 import cub.book.mapper.BookMapper;
 import cub.book.service.RedisService;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 
 @ApplicationScoped
@@ -70,17 +71,71 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 			break;
 
 		case "2":
-			for (BookEntity bookEntity : RedisBookValue.values()) {
-				if ("1".equals(bookQueryRq.getBookStatus()) && "1".equals(bookEntity.getBookStatus())
-						&& bookEntity.getBookIsbn() != null) {
-					lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
-				} else if ("2".equals(bookQueryRq.getBookStatus()) && "2".equals(bookEntity.getBookStatus())
-						&& bookEntity.getBookIsbn() != null) {
-					lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
-				} else if ("3".equals(bookQueryRq.getBookStatus()) && "3".equals(bookEntity.getBookStatus())
-						&& bookEntity.getBookIsbn() != null) {
-					lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+
+			String QueryCase2key = "BookQueryCase2:" + bookQueryRq.getBookStatus();
+
+			if ("1".equals(bookQueryRq.getBookStatus())) {
+
+				if (redisService.exitstKey(QueryCase2key)) {
+					Set<BookEntity> setBookEntity = redisService.getBookQuery(QueryCase2key);
+
+					for (BookEntity bookEntity : setBookEntity) {
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+					}
+					logUtils.message("INFO", "bookQuery", "query was executed successfully by redis");
+
+				} else {
+
+					PanacheQuery<BookEntity> paBookEntity = find("bookStatus", bookQueryRq.getBookStatus());
+					List<BookEntity> lsBookEntity = paBookEntity.list();
+
+					for (BookEntity bookEntity : lsBookEntity) {
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+						redisService.setBookQuery(QueryCase2key, bookEntity);
+					}
+					logUtils.message("INFO", "bookQuery", "query was executed successfully by mysql");
 				}
+
+			} else if ("2".equals(bookQueryRq.getBookStatus())) {
+
+				if (redisService.exitstKey(QueryCase2key)) {
+					Set<BookEntity> setBookEntity = redisService.getBookQuery(QueryCase2key);
+
+					for (BookEntity bookEntity : setBookEntity) {
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+					}
+					logUtils.message("INFO", "bookQuery", "query was executed successfully by redis");
+
+				} else {
+					PanacheQuery<BookEntity> paBookEntity = find("bookStatus", bookQueryRq.getBookStatus());
+					List<BookEntity> lsBookEntity = paBookEntity.list();
+					for (BookEntity bookEntity : lsBookEntity) {
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+						redisService.setBookQuery(QueryCase2key, bookEntity);
+					}
+					logUtils.message("INFO", "bookQuery", "query was executed successfully by mysql");
+				}
+
+			} else if ("3".equals(bookQueryRq.getBookStatus())) {
+
+				if (redisService.exitstKey(QueryCase2key)) {
+					Set<BookEntity> setBookEntity = redisService.getBookQuery(QueryCase2key);
+
+					for (BookEntity bookEntity : setBookEntity) {
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+					}
+					logUtils.message("INFO", "bookQuery", "query was executed successfully by redis");
+					
+				} else {
+					PanacheQuery<BookEntity> paBookEntity = find("bookStatus", bookQueryRq.getBookStatus());
+					List<BookEntity> lsBookEntity = paBookEntity.list();
+					for (BookEntity bookEntity : lsBookEntity) {
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+						redisService.setBookQuery(QueryCase2key, bookEntity);
+					}
+					logUtils.message("INFO", "bookQuery", "query was executed successfully by mysql");
+				}
+
 			}
 			break;
 
@@ -111,7 +166,8 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 				}
 				
 				logUtils.message("INFO", "bookQuery", "query was executed successfully by mysql");
-			}				
+			}
+			break;
 		}
 		
 		return lsBookDto;

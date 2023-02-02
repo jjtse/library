@@ -75,7 +75,6 @@ public class BookServiceImpl implements BookService {
 	@Override
 	public CubResponse<BookDeleteRq> deleteBookData(@Valid BookDeleteRq bookDeleteRq) {
 		CubResponse<BookDeleteRq> cubRs = new CubResponse<BookDeleteRq>();
-		String key = bookDeleteRq.getBookIsbn();
 		PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookDeleteRq.getBookIsbn());
 		Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
 
