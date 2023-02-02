@@ -84,10 +84,10 @@ public class BookServiceImpl implements BookService {
 			if (optBookEntity.isPresent()) {
 				bookRepository.deleteByIsbn(bookDeleteRq.getBookIsbn());
 				logUtils.message("INFO", "deleteAdd", "sql was deleted successful");
-				redisService.deleteBookDeleteRq(key);
-				logUtils.message("INFO", "deleteAdd", "redis was deleted successful");
 				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 				logUtils.message("INFO", "deleteAdd", "response data: " + cubRs.toString());
+				redisService.deleteKeysAll();
+				logUtils.message("INFO", "deleteAll", "redis was flushed successful");
 				return cubRs;
 			}
 			cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
