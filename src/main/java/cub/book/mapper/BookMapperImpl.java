@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import cub.book.dto.BookAddRq;
 import cub.book.dto.BookDto;
 import cub.book.dto.BookInOutRq;
 import cub.book.dto.BookUpdateRq;
@@ -68,5 +69,22 @@ public class BookMapperImpl implements BookMapper {
 		}
 		return bookEntity;
 	}
+
+	@Override
+	public BookEntity BookAddRqToBookEntity(BookAddRq bookAddRq) {
+		LocalDate currentDate = LocalDate.now();
+		BookEntity bookEntity = new BookEntity();
+		bookEntity.setBookIsbn(bookAddRq.getBookIsbn());
+		bookEntity.setBookLanguage(bookAddRq.getBookLanguage());
+		bookEntity.setBookName(bookAddRq.getBookName());
+		bookEntity.setBookAuthor(bookAddRq.getBookAuthor());
+		bookEntity.setBookPublisher(bookAddRq.getBookPublisher());
+		bookEntity.setBookStatus("1");
+		bookEntity.setBookPubDate(bookAddRq.getBookPubDate());
+		bookEntity.setBookCreateDate(currentDate);
+		return bookEntity;
+	}
+	
+	
 
 }

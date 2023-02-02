@@ -1,5 +1,6 @@
 package cub.book.mapper;
 
+import cub.book.dto.BookAddRq;
 import cub.book.dto.BookDto;
 import cub.book.dto.BookInOutRq;
 import cub.book.dto.BookUpdateRq;
@@ -12,6 +13,8 @@ public interface BookMapper {
 	BookDto AllBookEntityToBookDto(BookEntity bookEntity);
 	
 	BookEntity BookBorrowRqToBookEntity(BookInOutRq bookInOutRq, BookEntity bookEntity, String type);
+	
+	BookEntity BookAddRqToBookEntity(BookAddRq bookAddRq);
 
 }
 
