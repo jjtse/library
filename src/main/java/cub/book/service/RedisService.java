@@ -3,6 +3,7 @@ package cub.book.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 //import javax.inject.Inject;
@@ -13,6 +14,7 @@ import cub.book.entity.BookEntity;
 //import io.vertx.mutiny.redis.client.RedisAPI;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.keys.KeyCommands;
+import io.quarkus.redis.datasource.set.SetCommands;
 import io.quarkus.redis.datasource.value.ValueCommands;
 
 @ApplicationScoped
@@ -26,6 +28,7 @@ public class RedisService {
 	private final ValueCommands<String, BookDeleteRq> commandsBookDeleteRq;
 	private final ValueCommands<String, BookEntity> commandsBookAddRq;
 	private final ValueCommands<String, BookEntity> commandsBookAllRq;
+	private final SetCommands<String, BookEntity> commandsBookQuery;
 	private KeyCommands<String> keys;
 
 	public RedisService(RedisDataSource ds) {
@@ -33,6 +36,7 @@ public class RedisService {
 		commandsBookDeleteRq = ds.value(BookDeleteRq.class);
 		commandsBookAddRq = ds.value(BookEntity.class);
 		commandsBookAllRq = ds.value(BookEntity.class);
+		commandsBookQuery = ds.set(BookEntity.class);
 		keys = ds.key();
 	}
 
@@ -77,4 +81,17 @@ public class RedisService {
 		String[] arrayKeys = listKeys.toString().replace("[", "").replace("]", "").split(", ");
 		keys.del(arrayKeys);
 	}
+	
+	public boolean exitstKey(String key) {
+		return keys.exists(key);
+	}
+	
+	public void setBookQuery(String key, BookEntity valueType) {
+		commandsBookQuery.sadd(key, valueType);
+	}
+	
+	public Set<BookEntity> getBookQuery(String key) {
+		return commandsBookQuery.smembers(key);
+	}
+		
 }

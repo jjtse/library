@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -11,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import cub.book.Utils.LogUtils;
 import cub.book.dto.BookDto;
 import cub.book.dto.BookQueryRq;
 import cub.book.entity.BookEntity;
@@ -21,6 +23,9 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 @ApplicationScoped
 public class BookRepository implements PanacheRepository<BookEntity> {
 
+	@Inject
+	LogUtils logUtils;
+	
 	@Inject
 	EntityManager entityManager;
 
@@ -80,15 +85,35 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 			break;
 
 		case "3":
-			for (BookEntity bookEntity : RedisBookValue.values()) {
-				String EntityBookName = bookEntity.getBookName().toUpperCase();
-				String RqBookName = bookQueryRq.getBookName().toUpperCase();
-				if (EntityBookName.contains(RqBookName) && bookEntity.getBookIsbn() != null) {
+			
+			String key = "BookQueryCase3:" + bookQueryRq.getBookName();
+			
+			if(redisService.exitstKey(key)) {
+				
+				Set<BookEntity> setBookEntity = redisService.getBookQuery(key);
+				
+				for(BookEntity bookEntity: setBookEntity) {
 					lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
 				}
-			}
-			break;
+				
+				logUtils.message("INFO", "bookQuery", "query was executed successfully by redis");
+				
+			}else {
+				
+				List<BookEntity> lsBookEntity =entityManager
+						.createQuery("select e from BookEntity e where e.bookName like ?1", BookEntity.class)
+						.setParameter(1, "%"+bookQueryRq.getBookName()+"%")
+						.getResultList();
+				
+				for(BookEntity bookEntity: lsBookEntity) {
+					lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+					redisService.setBookQuery(key, bookEntity);
+				}
+				
+				logUtils.message("INFO", "bookQuery", "query was executed successfully by mysql");
+			}				
 		}
+		
 		return lsBookDto;
 	}
 }
