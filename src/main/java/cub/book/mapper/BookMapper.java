@@ -2,7 +2,6 @@ package cub.book.mapper;
 
 import cub.book.dto.BookAddRq;
 import cub.book.dto.BookDto;
-import cub.book.dto.BookInOutRq;
 import cub.book.dto.BookUpdateRq;
 import cub.book.entity.BookEntity;
 
