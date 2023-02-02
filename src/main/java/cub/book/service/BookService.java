@@ -20,7 +20,7 @@ public interface BookService {
 
 	CubResponse<BookDeleteRq> deleteBookData(@Valid BookDeleteRq bookDeleteRq);
 
-	CubResponse<BookInOutRq> bookBorrow(@Valid BookInOutRq bookInOutRq, String type);
+	CubResponse<BookInOutRq> bookBorrow(@Valid BookInOutRq bookInOutRq);
 
-	CubResponse<BookInOutRq> bookReturn(@Valid BookInOutRq bookInOutRq, String type);
+	CubResponse<BookInOutRq> bookReturn(@Valid BookInOutRq bookInOutRq);
 }

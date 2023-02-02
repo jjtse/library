@@ -1,6 +1,5 @@
 package cub.book.service.impl;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -161,40 +160,26 @@ public class BookServiceImpl implements BookService {
 
 	@Override
 	@Transactional
-	public CubResponse<BookInOutRq> bookBorrow(@Valid BookInOutRq bookInOutRq, String type) {
+	public CubResponse<BookInOutRq> bookBorrow(@Valid BookInOutRq bookInOutRq) {
 		CubResponse<BookInOutRq> cubRs = new CubResponse<BookInOutRq>();
 		String key = bookInOutRq.getBookIsbn();
 		try {
-			if (redisService.getBookRq(key) != null) {
-				BookEntity redisBookData = redisService.get(key);
-				if ("2".equals(redisBookData.getBookStatus())) {
+			PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", key);
+			Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
+			if (optBookEntity.isPresent()) {
+				BookEntity bookData = optBookEntity.get();
+				if ("2".equals(bookData.getBookStatus())) {
 					cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，該書已借出");
-					logUtils.message("INFO", "bookBorrow", "redis check bookBorrow Status was borrowed");
+					logUtils.message("INFO", "bookBorrow", "mysql check bookBorrow Status was borrowed");
 				} else {
-					BookEntity bookEntity = new BookEntity();
-					bookEntity.setBookIsbn(redisBookData.getBookIsbn());
-					bookEntity.setBookLanguage(redisBookData.getBookLanguage());
-					bookEntity.setBookName(redisBookData.getBookName());
-					bookEntity.setBookAuthor(redisBookData.getBookAuthor());
-					bookEntity.setBookPublisher(redisBookData.getBookPublisher());
-					bookEntity.setBookPubDate(redisBookData.getBookPubDate());
-					bookEntity.setBookCreateDate(redisBookData.getBookCreateDate());
-					bookEntity.setBookBorrowerId(bookInOutRq.getBookBorrowerId());
+					BookEntity bookEntity = optBookEntity.get();
 					bookEntity.setBookStatus("2");
-					bookEntity.setBorrowDate(LocalDate.now());
-					redisService.set(key, bookEntity);
-					logUtils.message("INFO", "bookBorrow", "redis update bookBorrow Status was successful");
-
-					PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookInOutRq.getBookIsbn());
-					Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
-					if (optBookEntity.isPresent()) {
-						BookEntity bookEntities = optBookEntity.get();
-						bookMapper.BookBorrowRqToBookEntity(bookInOutRq, bookEntities, type);
-						bookRepository.persist(bookEntities);
-						logUtils.message("INFO", "bookBorrow", "mysql update bookBorrow Status was successful");
-						cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
-						logUtils.message("INFO", "bookBorrow", "response data: " + cubRs.toString());
-					}
+					bookRepository.persist(bookEntity);
+					logUtils.message("INFO", "bookBorrow", "mysql update bookBorrow Status was successful");
+					cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
+					logUtils.message("INFO", "bookBorrow", "response data: " + cubRs.toString());
+					redisService.deleteKeysAll();
+					logUtils.message("INFO", "bookBorrow", "redis was flushed successful");
 				}
 			} else {
 				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
@@ -212,40 +197,26 @@ public class BookServiceImpl implements BookService {
 
 	@Override
 	@Transactional
-	public CubResponse<BookInOutRq> bookReturn(@Valid BookInOutRq bookInOutRq, String type) {
+	public CubResponse<BookInOutRq> bookReturn(@Valid BookInOutRq bookInOutRq) {
 		CubResponse<BookInOutRq> cubRs = new CubResponse<BookInOutRq>();
 		String key = bookInOutRq.getBookIsbn();
 		try {
-			if (redisService.getBookRq(key) != null) {
-				BookEntity redisBookData = redisService.get(key);
-				if ("1".equals(redisBookData.getBookStatus())) {
+			PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", key);
+			Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
+			if (optBookEntity.isPresent()) {
+				BookEntity bookData = optBookEntity.get();
+				if ("1".equals(bookData.getBookStatus())) {
 					cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，該書已歸還");
-					logUtils.message("INFO", "bookReturn", "redis check bookReturn Status has Returned already");
+					logUtils.message("INFO", "bookReturn", "mysql check bookReturn Status has Returned already");
 				} else {
-					BookEntity bookEntity = new BookEntity();
-					bookEntity.setBookIsbn(redisBookData.getBookIsbn());
-					bookEntity.setBookLanguage(redisBookData.getBookLanguage());
-					bookEntity.setBookName(redisBookData.getBookName());
-					bookEntity.setBookAuthor(redisBookData.getBookAuthor());
-					bookEntity.setBookPublisher(redisBookData.getBookPublisher());
-					bookEntity.setBookPubDate(redisBookData.getBookPubDate());
-					bookEntity.setBookCreateDate(redisBookData.getBookCreateDate());
-					bookEntity.setBookBorrowerId("");
+					BookEntity bookEntity = optBookEntity.get();
 					bookEntity.setBookStatus("1");
-					bookEntity.setBorrowDate(null);
-					redisService.set(key, bookEntity);
-					logUtils.message("INFO", "bookReturn", "redis update bookReturn Status was successful");
-
-					PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookInOutRq.getBookIsbn());
-					Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
-					if (optBookEntity.isPresent()) {
-						BookEntity bookEntities = optBookEntity.get();
-						bookMapper.BookBorrowRqToBookEntity(bookInOutRq, bookEntities, type);
-						bookRepository.persist(bookEntities);
-						logUtils.message("INFO", "bookReturn", "myqql update bookReturn Status was successful");
-						cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
-						logUtils.message("INFO", "bookReturn", "response data: " + cubRs.toString());
-					}
+					bookRepository.persist(bookEntity);
+					logUtils.message("INFO", "bookReturn", "mysql update bookReturn Status was successful");
+					cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
+					logUtils.message("INFO", "bookReturn", "response data: " + cubRs.toString());
+					redisService.deleteKeysAll();
+					logUtils.message("INFO", "bookReturn", "redis was flushed successful");
 				}
 
 			} else {
@@ -259,5 +230,6 @@ public class BookServiceImpl implements BookService {
 		}
 		return cubRs;
 	}
+
 
 }

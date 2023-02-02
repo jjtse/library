@@ -12,8 +12,6 @@ public interface BookMapper {
 
 	BookDto AllBookEntityToBookDto(BookEntity bookEntity);
 	
-	BookEntity BookBorrowRqToBookEntity(BookInOutRq bookInOutRq, BookEntity bookEntity, String type);
-	
 	BookEntity BookAddRqToBookEntity(BookAddRq bookAddRq);
 
 }

@@ -90,8 +90,7 @@ public class BookController {
 	@Path("/book/borrow")
 	public RestResponse<CubResponse<BookInOutRq>> bookBorrow(@Valid BookInOutRq bookInOutRq) {
 		logUtils.message("INFO", "bookBorrow", "Sending Requests to API:" + bookInOutRq.toString());
-		String checkType = "1";
-		CubResponse<BookInOutRq> cubRs = bookService.bookBorrow(bookInOutRq, checkType);
+		CubResponse<BookInOutRq> cubRs = bookService.bookBorrow(bookInOutRq);
 		LocalDateTime currentTime = LocalDateTime.now();
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
 	}
@@ -101,8 +100,7 @@ public class BookController {
 	@Path("/book/return")
 	public RestResponse<CubResponse<BookInOutRq>> bookReturn(@Valid BookInOutRq bookInOutRq) {
 		logUtils.message("INFO", "bookReturn", "Sending Requests to API:" + bookInOutRq.toString());
-		String checkType = "2";
-		CubResponse<BookInOutRq> cubRs = bookService.bookReturn(bookInOutRq, checkType);
+		CubResponse<BookInOutRq> cubRs = bookService.bookReturn(bookInOutRq);
 		LocalDateTime currentTime = LocalDateTime.now();
 		return ResponseBuilder.ok(cubRs, MediaType.APPLICATION_JSON).header("date", currentTime).build();
 	}
