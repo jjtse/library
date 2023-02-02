@@ -48,29 +48,6 @@ public class BookMapperImpl implements BookMapper {
 	}
 
 	@Override
-	public BookEntity BookBorrowRqToBookEntity(BookInOutRq bookInOutRq, BookEntity bookEntity, String type) {
-		LocalDate currentDate = LocalDate.now();
-		bookEntity.setBookIsbn(bookEntity.getBookIsbn());
-		bookEntity.setBookLanguage(bookEntity.getBookLanguage());
-		bookEntity.setBookName(bookEntity.getBookName());
-		bookEntity.setBookAuthor(bookEntity.getBookAuthor());
-		bookEntity.setBookPublisher(bookEntity.getBookPublisher());
-		bookEntity.setBookPubDate(bookEntity.getBookPubDate());
-		bookEntity.setBookCreateDate(bookEntity.getBookCreateDate());
-
-		if ("1".equals(type)) {
-			bookEntity.setBookStatus("2");
-			bookEntity.setBookBorrowerId(bookInOutRq.getBookBorrowerId());
-			bookEntity.setBorrowDate(currentDate);
-		} else {
-			bookEntity.setBookStatus("1");
-			bookEntity.setBookBorrowerId("");
-			bookEntity.setBorrowDate(null);
-		}
-		return bookEntity;
-	}
-
-	@Override
 	public BookEntity BookAddRqToBookEntity(BookAddRq bookAddRq) {
 		LocalDate currentDate = LocalDate.now();
 		BookEntity bookEntity = new BookEntity();
