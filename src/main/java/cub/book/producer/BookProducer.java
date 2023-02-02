@@ -15,7 +15,7 @@ public class BookProducer {
     Emitter<LogEntity> emitterLog;
 	
 	public void sendLogToKafka(LogEntity logEntity) {
-		emitterLog.send(logEntity);	
+		emitterLog.send(logEntity).toCompletableFuture().join();
 	}
 
 }
