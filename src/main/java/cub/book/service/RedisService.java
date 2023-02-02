@@ -71,4 +71,10 @@ public class RedisService {
 			return commandsBookAllRq.mget(key);
 		}
 	}
+	
+	public void deleteKeysAll() {
+		List<String> listKeys = keys.keys("*");
+		String[] arrayKeys = listKeys.toString().replace("[", "").replace("]", "").split(", ");
+		keys.del(arrayKeys);
+	}
 }

@@ -48,27 +48,19 @@ public class BookServiceImpl implements BookService {
 	@Override
 	@Transactional
 	public CubResponse<BookAddRq> insertBookData(@Valid BookAddRq bookAddRq) {
-		String key = bookAddRq.getBookIsbn();
+
 		CubResponse<BookAddRq> cubRs = new CubResponse<BookAddRq>();
+		PanacheQuery<BookEntity> paBookEntity = bookRepository.find("bookIsbn", bookAddRq.getBookIsbn());
+		Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
 
 		try {
-			if (redisService.getBookRq(key) == null) {
-				LocalDate currentDate = LocalDate.now();
-				BookEntity bookEntity = new BookEntity();
-				bookEntity.setBookIsbn(bookAddRq.getBookIsbn());
-				bookEntity.setBookLanguage(bookAddRq.getBookLanguage());
-				bookEntity.setBookName(bookAddRq.getBookName());
-				bookEntity.setBookAuthor(bookAddRq.getBookAuthor());
-				bookEntity.setBookPublisher(bookAddRq.getBookPublisher());
-				bookEntity.setBookStatus("1");
-				bookEntity.setBookPubDate(bookAddRq.getBookPubDate());
-				bookEntity.setBookCreateDate(currentDate);
-				redisService.setBookAddRq(key, bookEntity);
-				logUtils.message("INFO", "bookAdd", "redis was created successful");
-				bookRepository.persist(bookEntity);
+			if (!optBookEntity.isPresent()) {
+				bookRepository.persist(bookMapper.BookAddRqToBookEntity(bookAddRq));
 				logUtils.message("INFO", "bookAdd", "mysql was created successful");
 				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 				logUtils.message("INFO", "bookAdd", "response data: " + cubRs.toString());
+				redisService.deleteKeysAll();
+				logUtils.message("INFO", "bookAdd", "redis was flushed successful");
 			} else {
 				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料已存在");
 				logUtils.message("INFO", "bookAdd", "response data: " + cubRs.toString());
