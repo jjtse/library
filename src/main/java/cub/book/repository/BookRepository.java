@@ -53,12 +53,14 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 					for (BookEntity bookEntity : redisAllEntity) {
 						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
 					}
+					logUtils.message("INFO", "bookQuery", "query was executed successfully by redis");
 				} else {
 					List<BookEntity> lsBookEntity = listAll();
 					for (BookEntity bookEntity : lsBookEntity) {
 						redisService.hsetAll("BookQueryCase1", bookEntity.getBookIsbn(), bookEntity);
 						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
 					}
+					logUtils.message("INFO", "bookQuery", "query was executed successfully by mysql");
 				}
 
 			} else {
@@ -70,6 +72,7 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 						if (optBookEntity.isPresent()) {
 							BookEntity bookEntity = optBookEntity.get();
 							lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+							logUtils.message("INFO", "bookQuery", "query was executed successfully by redis");
 						}
 					} catch (Exception e) {
 						return lsBookDto;
@@ -82,6 +85,7 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 						BookEntity bookEntity = optBookEntity.get();
 						redisService.set(key, bookEntity);
 						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+						logUtils.message("INFO", "bookQuery", "query was executed successfully by mysql");
 					}
 				}
 			}
