@@ -110,11 +110,8 @@ public class BookServiceImpl implements BookService {
 				bookQueryRs.setBookList(lsBookDto);
 				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.SUCCESS);
 				cubRs.setTranRs(bookQueryRs);
-				if ("1".equals(bookQueryRq.getQueryType())) {
-					logUtils.message("INFO", "bookQuery", "bookQuery all has successful");
-				} else {
-					logUtils.message("INFO", "bookQuery", "response data: " + cubRs.toString());
-				}
+				logUtils.message("INFO", "bookQuery", "bookQueryType:" + bookQueryRq.getQueryType() + " has successful");
+
 			} else {
 				cubRs.setReturnCodeAndDesc(ReturnCodeEnum.E001, "，資料不存在");
 				logUtils.message("INFO", "bookQuery", "response data: " + cubRs.toString());
@@ -229,6 +226,5 @@ public class BookServiceImpl implements BookService {
 		}
 		return cubRs;
 	}
-
 
 }
