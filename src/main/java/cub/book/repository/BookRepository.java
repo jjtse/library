@@ -2,7 +2,6 @@ package cub.book.repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -45,28 +44,46 @@ public class BookRepository implements PanacheRepository<BookEntity> {
 	public List<BookDto> bookQuery(@Valid BookQueryRq bookQueryRq) {
 
 		List<BookDto> lsBookDto = new ArrayList<>();
-		String[] keys = redisService.keys().toString().replace("[", "").replace("]", "").split(", ");
-		Map<String, BookEntity> RedisBookValue = redisService.getAllBookRq(keys);
 		switch (bookQueryRq.getQueryType()) {
 
 		case "1":
 			if (bookQueryRq.getBookIsbn().isEmpty() || bookQueryRq.getBookIsbn() == null) {
-				for (BookEntity bookEntity : RedisBookValue.values()) {
-					lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
-				}
-			} else {
-				String key = bookQueryRq.getBookIsbn();
-				BookEntity redis_data = redisService.getBookRq(key);
-				try {
-					Optional<BookEntity> optBookEntity = Optional.of(redis_data);
-					if (optBookEntity.isPresent()) {
-						BookEntity bookEntity = optBookEntity.get();
+				List<BookEntity> redisAllEntity = redisService.hgetAll("BookQueryCase1");
+				if (redisAllEntity.size() != 0) {
+					for (BookEntity bookEntity : redisAllEntity) {
 						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
 					}
-				} catch (Exception e) {
-					return lsBookDto;
+				} else {
+					List<BookEntity> lsBookEntity = listAll();
+					for (BookEntity bookEntity : lsBookEntity) {
+						redisService.hsetAll("BookQueryCase1", bookEntity.getBookIsbn(), bookEntity);
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+					}
 				}
 
+			} else {
+				String key = bookQueryRq.getBookIsbn();
+				if (redisService.exitstKey(key)) {
+					BookEntity redis_data = redisService.getBookRq(key);
+					try {
+						Optional<BookEntity> optBookEntity = Optional.of(redis_data);
+						if (optBookEntity.isPresent()) {
+							BookEntity bookEntity = optBookEntity.get();
+							lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+						}
+					} catch (Exception e) {
+						return lsBookDto;
+					}
+				} else {
+					PanacheQuery<BookEntity> paBookEntity = find("bookIsbn", bookQueryRq.getBookIsbn());
+					Optional<BookEntity> optBookEntity = paBookEntity.singleResultOptional();
+
+					if (optBookEntity.isPresent()) {
+						BookEntity bookEntity = optBookEntity.get();
+						redisService.set(key, bookEntity);
+						lsBookDto.add(bookMapper.AllBookEntityToBookDto(bookEntity));
+					}
+				}
 			}
 			break;
 

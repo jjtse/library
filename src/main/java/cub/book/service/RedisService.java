@@ -13,6 +13,7 @@ import cub.book.entity.BookEntity;
 //import io.quarkus.redis.datasource.ReactiveRedisDataSource;
 //import io.vertx.mutiny.redis.client.RedisAPI;
 import io.quarkus.redis.datasource.RedisDataSource;
+import io.quarkus.redis.datasource.hash.HashCommands;
 import io.quarkus.redis.datasource.keys.KeyCommands;
 import io.quarkus.redis.datasource.set.SetCommands;
 import io.quarkus.redis.datasource.value.ValueCommands;
@@ -29,6 +30,7 @@ public class RedisService {
 	private final ValueCommands<String, BookEntity> commandsBookAddRq;
 	private final ValueCommands<String, BookEntity> commandsBookAllRq;
 	private final SetCommands<String, BookEntity> commandsBookQuery;
+	private HashCommands<String, String, BookEntity> commandsBookAll;
 	private KeyCommands<String> keys;
 
 	public RedisService(RedisDataSource ds) {
@@ -37,7 +39,16 @@ public class RedisService {
 		commandsBookAddRq = ds.value(BookEntity.class);
 		commandsBookAllRq = ds.value(BookEntity.class);
 		commandsBookQuery = ds.set(BookEntity.class);
+		commandsBookAll = ds.hash(BookEntity.class);
 		keys = ds.key();
+	}
+	
+	public void hsetAll(String key, String isbn, BookEntity bookEntity) {
+		commandsBookAll.hset(key, isbn, bookEntity);
+	}
+	
+	public List<BookEntity> hgetAll(String key) {
+		return commandsBookAll.hvals(key);
 	}
 
 	public BookEntity get(String key) {
